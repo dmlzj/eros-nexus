@@ -35,7 +35,7 @@ public class LoggerInterceptor implements Interceptor
 
     public LoggerInterceptor(String tag)
     {
-        this(tag, false);
+        this(tag, true);
     }
 
     @Override
