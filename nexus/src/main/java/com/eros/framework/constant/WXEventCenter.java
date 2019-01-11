@@ -11,6 +11,7 @@ public class WXEventCenter {
     public static final String EVENT_JS_OFFALL = "EVENT_JS_OFFALL";
     public static final String EVENT_INSTANCE_DESTORY = "EVENT_INSTANCE_DESTORY";
     public static final String EVENT_PAYBYWECHAT = "com.eros.erospluginwxpay.EventPay";
+    public static final String EVENT_AUTHBYWECHAT = "nongchanpinappv1.com.wxauth.EventWXAuth";
     public static final String EVENT_OPEN = "com.eros.framework.event.router.EventOpen";
     public static final String EVENT_GETPARAMS = "com.eros.framework.event.router.EventGetParams";
     public static final String EVENT_BACK = "com.eros.framework.event.router.EventBack";

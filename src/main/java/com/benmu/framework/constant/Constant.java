@@ -208,7 +208,7 @@ public class Constant {
     }
 
     public static String getPageCategory() {
-        return APPLICATION_ID + ".categoty.page";
+        return APPLICATION_ID + ".category.page";
     }
 //    public static String BMPAGE_CATEGORY =
 

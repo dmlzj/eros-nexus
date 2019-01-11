@@ -41,6 +41,10 @@ public final class NativeInvokeHelper {
     final Object[] params = prepareArguments(
         invoker.getParameterTypes(),
         args);
+//    JSONObject jsonObject = JSONObject.parseObject(params);
+////        JSONObject jsonobject = JSONObject.fromObject(params);
+//    boolean refresh = (boolean) jsonObject.get("refresh");
+//    String urlpath = (String) jsonObject.get("path");
     if (invoker.isRunOnUIThread()) {
       WXSDKManager.getInstance().postOnUiThread(new Runnable() {
         @Override
