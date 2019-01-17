@@ -11,7 +11,6 @@ public class WXEventCenter {
     public static final String EVENT_JS_OFFALL = "EVENT_JS_OFFALL";
     public static final String EVENT_INSTANCE_DESTORY = "EVENT_INSTANCE_DESTORY";
     public static final String EVENT_PAYBYWECHAT = "com.eros.erospluginwxpay.EventPay";
-    public static final String EVENT_AUTHBYWECHAT = "nongchanpinappv1.com.wxauth.EventWXAuth";
     public static final String EVENT_OPEN = "com.eros.framework.event.router.EventOpen";
     public static final String EVENT_GETPARAMS = "com.eros.framework.event.router.EventGetParams";
     public static final String EVENT_BACK = "com.eros.framework.event.router.EventBack";
@@ -82,4 +81,9 @@ public class WXEventCenter {
 
     public static final String EVENT_DOWNLOAD_BUNDLE = "EVENT_DOWNLOAD_BUNDLE";
     public static final String EVENT_UPDATE_BUNDLE = "EVENT_UPDATE_BUNDLE";
+    public static final String EVENT_AUTHBYWECHAT = "nongchanpinappv1.com.wxauth.EventWXAuth";
+
+    // 七鱼客服
+    public static final String EVENT_QIYU_COUNT = "EVENT_QIYU_COUNT";
+    public static final String EVENT_QIYU_MESSAGE = "EVENT_QIYU_MESSAGE";
 }
