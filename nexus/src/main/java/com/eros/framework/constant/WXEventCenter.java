@@ -56,6 +56,7 @@ public class WXEventCenter {
     public static final String EVENT_NAVIGATIONINFO = "com.eros.framework.event.nav" +
             ".EventNavigationInfo";
     public static final String EVENT_COPYSTRING = "EVENT_COPYSTRING";
+    public static final String EVENT_OPENAPP = "EVENT_OPENAPP"; // 打开第三方app
     public static final String EVENT_RELAYTOFRIEND = "EVENT_RELAYTOFRIEND";
     public static final String EVENT_RELAYTOCRICLE = "EVENT_RELAYTOCRICLE";
     public static final String EVENT_OPENBROWSER = "com.eros.framework.event.router" +

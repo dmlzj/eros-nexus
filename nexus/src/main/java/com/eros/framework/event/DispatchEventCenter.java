@@ -88,6 +88,7 @@ public class DispatchEventCenter {
             case WXEventCenter.EVENT_ISINSTALLWXAPP:
             case WXEventCenter.EVENT_GETCID:
             case WXEventCenter.EVENT_COPYSTRING:
+            case WXEventCenter.EVENT_OPENAPP:
                 reflectionClazzPerform("com.eros.framework.event.tool.EventTool", context
                         , weexEventBean
                         , "", weexEventBean.getKey());
