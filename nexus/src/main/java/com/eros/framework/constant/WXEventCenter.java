@@ -83,6 +83,7 @@ public class WXEventCenter {
     public static final String EVENT_DOWNLOAD_BUNDLE = "EVENT_DOWNLOAD_BUNDLE";
     public static final String EVENT_UPDATE_BUNDLE = "EVENT_UPDATE_BUNDLE";
     public static final String EVENT_AUTHBYWECHAT = "nongchanpinappv1.com.wxauth.EventWXAuth";
+    public static final String EVENT_OPENMINI = "nongchanpinappv1.com.wxauth.EventOpenMini";
 
     // 七鱼客服
     public static final String EVENT_QIYU_COUNT = "EVENT_QIYU_COUNT";
