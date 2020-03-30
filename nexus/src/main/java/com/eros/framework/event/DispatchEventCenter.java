@@ -138,7 +138,7 @@ public class DispatchEventCenter {
             // 扩展七鱼客服
             case WXEventCenter.EVENT_QIYU_COUNT:
             case WXEventCenter.EVENT_QIYU_MESSAGE:
-                 reflectionClazzPerform("com.nongchanpinappv1.erospluginqiyu.EventQiyu", context
+                 reflectionClazzPerform("org.shengyun.oneone.erospluginqiyu.EventQiyu", context
                         , weexEventBean
                         , "", weexEventBean.getKey());
                 break;
