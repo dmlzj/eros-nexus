@@ -21,6 +21,7 @@ package com.taobao.weex.ui.component;
 import android.view.ViewGroup;
 
 import java.util.Map;
+import com.taobao.weex.common.Constants.Orientation;
 
 /**
  * Created by sospartan on 7/5/16.
@@ -51,7 +52,7 @@ public interface Scrollable {
 
   /**
    *
-   * @return {@link com.taobao.weex.common.Constants.Orientation#HORIZONTAL} or {@link com.taobao.weex.common.Constants.Orientation#VERTICAL}
+   * @return {@link Orientation#HORIZONTAL} or {@link Orientation#VERTICAL}
    */
   int getOrientation();
 

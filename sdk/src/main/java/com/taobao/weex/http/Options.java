@@ -21,6 +21,7 @@ package com.taobao.weex.http;
 import java.util.HashMap;
 import java.util.Map;
 import com.taobao.weex.common.*;
+import com.taobao.weex.common.WXRequest;
 
 /**
  * Created by sospartan on 5/19/16.

@@ -18,6 +18,7 @@
  */
 package com.taobao.weex.ui.module;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -27,17 +28,13 @@ import android.text.TextUtils;
 import android.view.Gravity;
 import android.widget.EditText;
 import android.widget.Toast;
-
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.taobao.weex.WXSDKEngine;
 import com.taobao.weex.annotation.JSMethod;
 import com.taobao.weex.bridge.JSCallback;
 import com.taobao.weex.utils.WXLogUtils;
-
-import java.net.URLDecoder;
 import java.util.HashMap;
 import java.util.Map;
+import com.taobao.weex.WXSDKEngine.DestroyableModule;
 
 
 /**
@@ -45,7 +42,7 @@ import java.util.Map;
  * for example(weex JS):
  * this.$call('modal','toast',{'message':'test toast','duration': 2.0});
  */
-public class WXModalUIModule extends WXSDKEngine.DestroyableModule {
+public class WXModalUIModule extends DestroyableModule {
 
   public static final String OK = "OK";
   public static final String CANCEL = "Cancel";
@@ -59,9 +56,12 @@ public class WXModalUIModule extends WXSDKEngine.DestroyableModule {
   private Toast toast;
   private Dialog activeDialog;
 
+  @SuppressLint("ShowToast")
   @JSMethod(uiThread = true)
   public void toast(JSONObject jsObj) {
-
+    if(mWXSDKInstance.getContext() == null){
+      return;
+    }
     String message = "";
     int duration = Toast.LENGTH_SHORT;
     if (jsObj != null) {
@@ -258,7 +258,6 @@ public class WXModalUIModule extends WXSDKEngine.DestroyableModule {
   @Override
   public void destroy() {
     if (activeDialog != null && activeDialog.isShowing()) {
-      WXLogUtils.w("Dismiss the active dialog");
       activeDialog.dismiss();
     }
   }

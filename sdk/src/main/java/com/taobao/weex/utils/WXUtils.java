@@ -22,14 +22,18 @@ import android.app.ActivityManager;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.os.Looper;
+import android.os.SystemClock;
 import android.support.annotation.Nullable;
+import android.support.v4.util.LruCache;
 import android.text.TextUtils;
 import com.taobao.weex.WXEnvironment;
+import com.taobao.weex.WXSDKManager;
+import com.taobao.weex.adapter.IWXConfigAdapter;
 import com.taobao.weex.common.Constants;
-import com.taobao.weex.common.WXConfig;
 
 public class WXUtils {
 
+  final static LruCache<String, Integer> sCache = new LruCache<>(64);
   public static final char PERCENT = '%';
   private static final int HUNDRED =100;
   /**
@@ -51,8 +55,8 @@ public class WXUtils {
     }
     String temp = value.toString().trim();
     if (Constants.Name.AUTO.equals(temp)
-        || Constants.Name.UNDEFINED.equals(temp)
-        || TextUtils.isEmpty(temp)) {
+            || Constants.Name.UNDEFINED.equals(temp)
+            || TextUtils.isEmpty(temp)) {
       WXLogUtils.e("Argument Warning ! value is " + temp + "And default Value:" + Float.NaN);
       return Float.NaN;
     }
@@ -97,8 +101,8 @@ public class WXUtils {
 
     String temp = value.toString().trim();
     if(Constants.Name.AUTO.equals(temp)
-        || Constants.Name.UNDEFINED.equals(temp)
-        || TextUtils.isEmpty(temp)){
+            || Constants.Name.UNDEFINED.equals(temp)
+            || TextUtils.isEmpty(temp)){
       WXLogUtils.e("Argument Warning ! value is " + temp + "And default Value:"+Float.NaN);
       return df;
     }
@@ -140,7 +144,7 @@ public class WXUtils {
       temp = stringWithWXPostfix.substring(0, stringWithWXPostfix.indexOf("wx"));
     }
     Float f = Float.parseFloat(temp);
-    float density = Float.parseFloat(WXEnvironment.getConfig().get(WXConfig.scale));
+    float density = WXEnvironment.sApplication.getResources().getDisplayMetrics().density;
     return density * f * viewport / WXViewUtils.getScreenWidth();
   }
 
@@ -178,7 +182,7 @@ public class WXUtils {
           }
         }
         else{
-          throw new NumberFormatException("Illegal separator");
+          // throw new NumberFormatException("Illegal separator");
         }
       }
 
@@ -186,7 +190,8 @@ public class WXUtils {
         result*=-1;
       return result;
     }
-    throw new NumberFormatException("NullNumber");
+    return 0;
+    // throw new NumberFormatException("NullNumber");
   }
 
   /**
@@ -199,53 +204,118 @@ public class WXUtils {
     return fastGetFloat(raw, Integer.MAX_VALUE);
   }
 
+  public static int parseInt(String value) {
+    try {
+      if (!TextUtils.isEmpty(value) && !value.contains(".")) {
+        return Integer.parseInt(value);
+      }
+    } catch (NumberFormatException e) {
+      if (WXEnvironment.isApkDebugable()) {
+        WXLogUtils.e(WXLogUtils.getStackTrace(e));
+      }
+    }
+    return 0;
+  }
+
+  public static int parseInt(Object value) {
+    return parseInt(String.valueOf(value));
+  }
+
+  public static float parseFloat(Object value) {
+    return parseFloat(String.valueOf(value));
+  }
+
+  public static float parseFloat(String value) {
+    try {
+      if (!TextUtils.isEmpty(value) && !TextUtils.equals(value, "null")) {
+        return Float.parseFloat(value);
+      } else {
+        if (WXEnvironment.isApkDebugable()) {
+          WXLogUtils.e("WXUtils parseFloat illegal value is " + value);
+        }
+      }
+    } catch (NumberFormatException e) {
+      if (WXEnvironment.isApkDebugable()) {
+        WXLogUtils.e(WXLogUtils.getStackTrace(e));
+      }
+    }
+    return 0;
+  }
+
   public static int getInt(Object value) {
     return getInteger(value, 0);
   }
 
-  public static Integer getInteger(@Nullable Object value, @Nullable Integer df) {
+  public static @Nullable Integer getInteger(@Nullable Object value, @Nullable Integer df) {
 
     if (value == null) {
       return df;
     }
 
-    try {
-      return (Integer) value;
-    } catch (ClassCastException cce) {
-      String temp = value.toString().trim();
+    String temp = value.toString().trim();
+    String key = temp;
+    Integer cache = sCache.get(key);
+    if (cache != null) {
+      return cache;
+    } else {
+      Integer ret = df;
+      String suffix = "";
+      if (temp.length() >= 2) {
+        suffix = temp.substring(temp.length() - 2, temp.length());
+      }
 
-      if (temp.endsWith("wx")) {
+      if (TextUtils.equals("wx", suffix)) {
         if (WXEnvironment.isApkDebugable()) {
-          WXLogUtils.w("the value of " + value + " use wx unit, which will be not supported soon after.");
+          WXLogUtils
+              .w("the value of " + value
+                  + " use wx unit, which will be not supported soon after.");
         }
         try {
-          return (int) transferWx(temp, 750);
+          ret = (int)transferWx(temp, 750);
         } catch (NumberFormatException e) {
           WXLogUtils.e("Argument format error! value is " + value, e);
         } catch (Exception e) {
           WXLogUtils.e("Argument error! value is " + value, e);
         }
-      }else if (temp.endsWith("px")) {
+      } else if (TextUtils.equals("px", suffix)) {
         try {
-          temp = temp.substring(0, temp.indexOf("px"));
-          return Integer.parseInt(temp);
+          temp = temp.substring(0, temp.length() - 2);
+          if (!TextUtils.isEmpty(temp) && temp.contains(".")) {
+            ret = (int)WXUtils.parseFloat(temp);
+          } else {
+            ret = Integer.parseInt(temp);
+          }
         } catch (NumberFormatException nfe) {
           WXLogUtils.e("Argument format error! value is " + value, nfe);
         } catch (Exception e) {
           WXLogUtils.e("Argument error! value is " + value, e);
         }
-      }else {
+      } else {
         try {
-          return Integer.parseInt(temp);
+          if (!TextUtils.isEmpty(temp)) {
+            if (temp.contains(".")) {
+              ret = (int)WXUtils.parseFloat(temp);
+            } else {
+              ret = Integer.parseInt(temp);
+            }
+          } else {
+            if (WXEnvironment.isApkDebugable()) {
+              WXLogUtils.e("Argument value is null, df is" + df);
+            }
+          }
         } catch (NumberFormatException nfe) {
-          WXLogUtils.e("Argument format error! value is " + value, nfe);
+          if (WXEnvironment.isApkDebugable()) {
+            WXLogUtils.w("The parameter format is not supported", nfe);
+          }
         } catch (Exception e) {
           WXLogUtils.e("Argument error! value is " + value, e);
         }
       }
+      if (ret != null && !ret.equals(df)) {
+        sCache.put(key, ret);
+      }
+      return ret;
     }
-
-    return df;
   }
 
   /**
@@ -337,11 +407,12 @@ public class WXUtils {
     return result;
   }
 
+  @Deprecated
   public static boolean isTabletDevice() {
     try{
       return (WXEnvironment.getApplication().getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) >= Configuration.SCREENLAYOUT_SIZE_LARGE;
     }catch (Exception e){
-      WXLogUtils.e("[WXUtils] isTabletDevice:", e);
+      //
     }
     return false;
   }
@@ -362,8 +433,8 @@ public class WXUtils {
     ActivityManager am = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
     ActivityManager.MemoryInfo mi = new ActivityManager.MemoryInfo();
     am.getMemoryInfo(mi);
-    //mi.availMem; 当前系统的可用内存
-    //return Formatter.formatFileSize(context, mi.availMem);// 将获取的内存大小规格化
+    //mi.availMem;
+    //return Formatter.formatFileSize(context, mi.availMem);
     WXLogUtils.w("app AvailMemory ---->>>"+mi.availMem/(1024*1024));
     return mi.availMem/(1024*1024);
   }
@@ -389,7 +460,7 @@ public class WXUtils {
       return parsePercent(raw.substring(0, suffix), unit);
     }
     else {
-      return Integer.parseInt(raw);
+      return WXUtils.parseInt(raw);
     }
   }
 
@@ -420,12 +491,12 @@ public class WXUtils {
 
     int offsetCountBegin = content.indexOf(commentBegin);
     if (offsetCountBegin == -1) {
-        return null;
+      return null;
     }
     offsetCountBegin += commentBegin.length();
     int offsetCountEnd = indexLineBreak(content, offsetCountBegin);
     if (offsetCountEnd == -1) {
-        return null;
+      return null;
     }
     String countStr = content.substring(offsetCountBegin, offsetCountEnd);
     int count = Integer.parseInt(countStr);
@@ -433,7 +504,7 @@ public class WXUtils {
     String commentBody = content.substring(offsetCountEnd + 1, offsetCountEnd + 1 + count);
     int offsetBodyEnd = commentBody.lastIndexOf(commentEnd);
     if (offsetBodyEnd == -1) {
-        return null;
+      return null;
     }
     commentBody = commentBody.substring(0, offsetBodyEnd);
 
@@ -441,45 +512,46 @@ public class WXUtils {
     String[] items = splitLineBreak(commentBody);
 
     for (String item : items) {
-        commentBodyBuilder.append(item.replaceFirst(asteriskRegex, replacement));
+      commentBodyBuilder.append(item.replaceFirst(asteriskRegex, replacement));
     }
 
     return commentBodyBuilder.toString();
-}
+  }
 
-private static int indexLineBreak(String str, int fromIndex) {
+  private static int indexLineBreak(String str, int fromIndex) {
     final String lineBreakIos = "\r";
     final String lineBreakUnix = "\n";
     final String linebreakWin = "\r\n";
 
     int index = str.indexOf(lineBreakIos, fromIndex);
     if (index == -1) {
-        index = str.indexOf(lineBreakUnix, fromIndex);
+      index = str.indexOf(lineBreakUnix, fromIndex);
     }
     if (index == -1) {
-        index = str.indexOf(linebreakWin, fromIndex);
+      index = str.indexOf(linebreakWin, fromIndex);
     }
 
     return index;
-}
+  }
 
-private static String[] splitLineBreak(String str) {
+  private static String[] splitLineBreak(String str) {
     final String lineBreakIos = "\r";
     final String lineBreakUnix = "\n";
     final String linebreakWin = "\r\n";
     String[] items = str.split(lineBreakIos);
 
     if (items.length == 1) {
-        items = str.split(lineBreakUnix);
+      items = str.split(lineBreakUnix);
     }
     if (items.length == 1) {
-        items = str.split(linebreakWin);
+      items = str.split(linebreakWin);
     }
 
     return items;
-}
+  }
 
 
+  
   /**
    * get number
    * */
@@ -498,6 +570,28 @@ private static String[] splitLineBreak(String str) {
         return  Integer.parseInt(number);
       }
     }catch (Exception e){return  defaultValue;}
+  }
+
+  public static boolean checkGreyConfig(String group,String key,String defaultValue){
+      IWXConfigAdapter configAdapter = WXSDKManager.getInstance().getWxConfigAdapter();
+      if (null == configAdapter) {
+        return false;
+      }
+      double randomValue = Math.random() * 100;
+      double max = 100;
+      try {
+        String configValue = configAdapter.getConfig(group, key, defaultValue);
+        max = Double.valueOf(configValue);
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+      return randomValue < max;
+  }
+
+  private static final long sInterval = System.currentTimeMillis() - SystemClock.uptimeMillis();
+
+  public static long getFixUnixTime(){
+    return  sInterval + SystemClock.uptimeMillis();
   }
 
 }

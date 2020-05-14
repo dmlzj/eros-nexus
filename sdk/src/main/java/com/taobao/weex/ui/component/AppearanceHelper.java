@@ -20,7 +20,6 @@ package com.taobao.weex.ui.component;
 
 import android.graphics.Rect;
 import android.view.View;
-import com.taobao.weex.utils.WXLogUtils;
 
 
 /**

@@ -31,10 +31,6 @@ import com.taobao.weex.utils.WXLogUtils;
  * Description:
  * An implementation of {@link ItemTouchHelper.Callback}. with drag&drop support:)
  *
- * <p>
- * Created by rowandjj(chuyi)<br/>
- * Date: 17/4/22<br/>
- * Time: 上午11:25<br/>
  */
 class DragSupportCallback extends ItemTouchHelper.Callback {
     private final DragHelper mDragHelper;

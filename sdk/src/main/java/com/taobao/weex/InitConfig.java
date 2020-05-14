@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -18,17 +18,22 @@
  */
 package com.taobao.weex;
 
+import android.support.annotation.NonNull;
+import com.taobao.weex.adapter.ClassLoaderAdapter;
 import com.taobao.weex.adapter.IDrawableLoader;
-import com.taobao.weex.adapter.IWXDebugAdapter;
 import com.taobao.weex.adapter.IWXHttpAdapter;
 import com.taobao.weex.adapter.IWXImgLoaderAdapter;
 import com.taobao.weex.adapter.IWXJSExceptionAdapter;
+import com.taobao.weex.adapter.IWXJsFileLoaderAdapter;
+import com.taobao.weex.adapter.IWXJscProcessManager;
 import com.taobao.weex.adapter.IWXSoLoaderAdapter;
-import com.taobao.weex.adapter.IWXTypefaceAdapter;
 import com.taobao.weex.adapter.IWXUserTrackAdapter;
 import com.taobao.weex.adapter.URIAdapter;
 import com.taobao.weex.appfram.storage.IWXStorageAdapter;
 import com.taobao.weex.appfram.websocket.IWebSocketAdapterFactory;
+import com.taobao.weex.performance.IApmGenerator;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Created by sospartan on 5/31/16.
@@ -38,16 +43,17 @@ public class InitConfig {
   private IDrawableLoader drawableLoader;
   private IWXImgLoaderAdapter imgAdapter;
   private IWXUserTrackAdapter utAdapter;
-  private IWXDebugAdapter debugAdapter;
   private IWXStorageAdapter storageAdapter;
   private IWXSoLoaderAdapter soLoader;
   private URIAdapter mURIAdapter;
   private IWebSocketAdapterFactory webSocketAdapterFactory;
   private IWXJSExceptionAdapter mJSExceptionAdapter;
   private String framework;
-
-  //本木自定义adapter
-  private IWXTypefaceAdapter mTypefaceAdapter;
+  private ClassLoaderAdapter classLoaderAdapter;
+  private IApmGenerator apmGenerater;
+  private IWXJsFileLoaderAdapter jsFileLoaderAdapter;
+  private IWXJscProcessManager jscProcessManager;
+  private List<String> nativeLibraryList;
 
   public IWXHttpAdapter getHttpAdapter() {
     return httpAdapter;
@@ -63,10 +69,6 @@ public class InitConfig {
 
   public IWXUserTrackAdapter getUtAdapter() {
     return utAdapter;
-  }
-
-  public IWXDebugAdapter getDebugAdapter() {
-    return debugAdapter;
   }
 
   public IWXSoLoaderAdapter getIWXSoLoaderAdapter() {
@@ -89,34 +91,68 @@ public class InitConfig {
     return webSocketAdapterFactory;
   }
 
+  public ClassLoaderAdapter getClassLoaderAdapter() {
+    return classLoaderAdapter;
+  }
+
+  public IApmGenerator getApmGenerater() {
+    return apmGenerater;
+  }
+
+  public IWXJsFileLoaderAdapter getJsFileLoaderAdapter() {
+    return jsFileLoaderAdapter;
+  }
+
+  public InitConfig setClassLoaderAdapter(ClassLoaderAdapter classLoaderAdapter) {
+    this.classLoaderAdapter = classLoaderAdapter;
+    return this;
+  }
+
   public IWXJSExceptionAdapter getJSExceptionAdapter() {
     return mJSExceptionAdapter;
   }
+  public IWXJscProcessManager getJscProcessManager() {
+    return jscProcessManager;
+  }
 
-  public IWXTypefaceAdapter getTypefaceAdapter() {
-    return mTypefaceAdapter;
+  @NonNull Iterable<String> getNativeLibraryList() {
+    if(nativeLibraryList == null){
+      nativeLibraryList = new LinkedList<>();
+    }
+    return nativeLibraryList;
   }
 
   private InitConfig() {
   }
 
-  public static class Builder {
+  public static class Builder{
     IWXHttpAdapter httpAdapter;
     IWXImgLoaderAdapter imgAdapter;
     IDrawableLoader drawableLoader;
     IWXUserTrackAdapter utAdapter;
-    IWXDebugAdapter debugAdapter;
     IWXStorageAdapter storageAdapter;
     IWXSoLoaderAdapter soLoader;
     URIAdapter mURIAdapter;
     IWXJSExceptionAdapter mJSExceptionAdapter;
     String framework;
     IWebSocketAdapterFactory webSocketAdapterFactory;
+    ClassLoaderAdapter classLoaderAdapter;
+    IApmGenerator apmGenerater;
+    private IWXJsFileLoaderAdapter jsFileLoaderAdapter;
+    private List<String> nativeLibraryList = new LinkedList<>();
 
-    //本木自定义adapter
-    private IWXTypefaceAdapter typefaceAdapter;
+    public IWXJscProcessManager getJscProcessManager() {
+      return jscProcessManager;
+    }
 
-    public Builder() {
+    public Builder setJscProcessManager(IWXJscProcessManager jscProcessManager) {
+      this.jscProcessManager = jscProcessManager;
+      return this;
+    }
+
+    IWXJscProcessManager jscProcessManager;
+
+    public Builder(){
 
     }
 
@@ -130,18 +166,13 @@ public class InitConfig {
       return this;
     }
 
-    public Builder setDrawableLoader(IDrawableLoader drawableLoader) {
-      this.drawableLoader = drawableLoader;
+    public Builder setDrawableLoader(IDrawableLoader drawableLoader){
+      this.drawableLoader=drawableLoader;
       return this;
     }
 
     public Builder setUtAdapter(IWXUserTrackAdapter utAdapter) {
       this.utAdapter = utAdapter;
-      return this;
-    }
-
-    public Builder setDebugAdapter(IWXDebugAdapter debugAdapter) {
-      this.debugAdapter = debugAdapter;
       return this;
     }
 
@@ -165,8 +196,8 @@ public class InitConfig {
       return this;
     }
 
-    public Builder setFramework(String framework) {
-      this.framework = framework;
+    public Builder setFramework(String framework){
+      this.framework=framework;
       return this;
     }
 
@@ -175,25 +206,43 @@ public class InitConfig {
       return this;
     }
 
-    public Builder setTypefaceAdapter(IWXTypefaceAdapter adapter) {
-      this.typefaceAdapter = adapter;
+    public Builder setClassLoaderAdapter(ClassLoaderAdapter classLoaderAdapter) {
+      this.classLoaderAdapter = classLoaderAdapter;
       return this;
     }
 
-    public InitConfig build() {
-      InitConfig config = new InitConfig();
+    public Builder setApmGenerater(IApmGenerator apmGenerater){
+      this.apmGenerater =apmGenerater;
+      return this;
+    }
+
+    public Builder setJsFileLoaderAdapter(IWXJsFileLoaderAdapter jsFileLoaderAdapter) {
+      this.jsFileLoaderAdapter = jsFileLoaderAdapter;
+      return this;
+    }
+
+    public Builder addNativeLibrary(String name){
+      nativeLibraryList.add(name);
+      return this;
+    }
+
+    public InitConfig build(){
+      InitConfig config =  new InitConfig();
       config.httpAdapter = this.httpAdapter;
       config.imgAdapter = this.imgAdapter;
       config.drawableLoader = this.drawableLoader;
       config.utAdapter = this.utAdapter;
-      config.debugAdapter = this.debugAdapter;
       config.storageAdapter = this.storageAdapter;
-      config.soLoader = this.soLoader;
-      config.framework = this.framework;
+      config.soLoader=this.soLoader;
+      config.framework=this.framework;
       config.mURIAdapter = this.mURIAdapter;
       config.webSocketAdapterFactory = this.webSocketAdapterFactory;
-      config.mJSExceptionAdapter = this.mJSExceptionAdapter;
-      config.mTypefaceAdapter = this.typefaceAdapter;
+      config.mJSExceptionAdapter=this.mJSExceptionAdapter;
+      config.classLoaderAdapter = this.classLoaderAdapter;
+      config.apmGenerater = this.apmGenerater;
+      config.jsFileLoaderAdapter = this.jsFileLoaderAdapter;
+      config.jscProcessManager = this.jscProcessManager;
+      config.nativeLibraryList = this.nativeLibraryList;
       return config;
     }
   }

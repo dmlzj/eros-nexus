@@ -69,7 +69,7 @@ public class CellRenderState {
     /**
      * mark once statements has rendered
      * */
-    private Map<String,ArrayStack> onceComponentStates;
+    private Map<String, ArrayStack> onceComponentStates;
 
 
     public Map<String, String> getVirtualComponentIds() {

@@ -18,19 +18,19 @@ specific language governing permissions and limitations
 under the License.
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          package="com.taobao.weappplus_sdk"
-          android:versionCode="1"
-          android:versionName="1.0">
+    package="com.taobao.weappplus_sdk"
+    android:versionCode="1"
+    android:versionName="1.0">
 
     <uses-sdk
-            android:minSdkVersion="18"
-            android:targetSdkVersion="26"/>
+        android:minSdkVersion="18"
+        android:targetSdkVersion="26"/>
 
     <application>
         <receiver
-                android:name="com.taobao.weex.WXGlobalEventReceiver"
-                android:enabled="true"
-                android:exported="false">
+            android:name="com.taobao.weex.WXGlobalEventReceiver"
+            android:enabled="true"
+            android:exported="false">
         </receiver>
     </application>
 

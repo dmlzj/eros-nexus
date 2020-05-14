@@ -33,4 +33,12 @@ public interface WXConfig {
   String externalUserAgent="externalUserAgent";
   String logLevel="logLevel";
   String scale = "scale";
+  String layoutDirection = "layoutDirection";
+  String debugMode = "debugMode";
+  String androidStatusBarHeight = "androidStatusBarHeight";
+  String deviceHeight = "deviceHeight";
+  String deviceWidth = "deviceWidth";
+
+
+
 }

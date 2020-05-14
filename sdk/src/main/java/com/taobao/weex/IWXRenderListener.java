@@ -19,13 +19,14 @@
 package com.taobao.weex;
 
 import android.view.View;
+import com.taobao.weex.common.WXRenderStrategy;
 
 public interface IWXRenderListener {
 
   /**
-   * If {@link com.taobao.weex.common.WXRenderStrategy#APPEND_ASYNC} is applied, this method
+   * If {@link WXRenderStrategy#APPEND_ASYNC} is applied, this method
    * will be invoked when the rendering of first view is finish.
-   * If {@link com.taobao.weex.common.WXRenderStrategy#APPEND_ONCE} is applied, this method will
+   * If {@link WXRenderStrategy#APPEND_ONCE} is applied, this method will
    * be invoked when the rendering of the view tree is finished.
    */
   void onViewCreated(WXSDKInstance instance, View view);

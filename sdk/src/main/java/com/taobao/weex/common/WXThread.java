@@ -23,7 +23,12 @@ import android.os.Handler.Callback;
 import android.os.HandlerThread;
 import android.os.Message;
 import com.taobao.weex.WXEnvironment;
+import com.taobao.weex.WXSDKInstance;
 import com.taobao.weex.utils.WXLogUtils;
+import com.taobao.weex.utils.tools.LogDetail;
+
+import java.lang.ref.WeakReference;
+import com.taobao.weex.utils.tools.TimeCalculator;
 
 /**
  * Thread used in weex
@@ -35,17 +40,37 @@ public class WXThread extends HandlerThread {
   static class SafeRunnable implements Runnable {
 
     static final String TAG = "SafeRunnable";
-
+    private LogDetail mTimelineLog = null;
+    private WeakReference<WXSDKInstance> mInstance;
     final Runnable mTask;
     SafeRunnable(Runnable task){
-      mTask = task;
+      this(task,null);
+    }
+
+    SafeRunnable(Runnable task, String taskName){
+      this(task,null, taskName);
+    }
+
+    SafeRunnable(Runnable runnable, WXSDKInstance instance, String taskName) {
+      mTask = runnable;
+      if(taskName != null) {
+        mTimelineLog = new LogDetail();
+        mTimelineLog.info.platform = TimeCalculator.PLATFORM_ANDROID;
+        mTimelineLog.name(taskName);
+        mInstance = new WeakReference<>(instance);
+      }
     }
 
     @Override
     public void run() {
       try {
-        if(mTask != null)
+        if(mTask != null) {
+          if (mTimelineLog != null)
+            mTimelineLog.taskStart();
           mTask.run();
+          if (mTimelineLog != null)
+            mTimelineLog.taskEnd();
+        }
       }catch (Throwable e){
         //catch everything may throw from exection.
         if(WXEnvironment.isApkDebugable()){
@@ -54,6 +79,16 @@ public class WXThread extends HandlerThread {
         }
         WXLogUtils.w(TAG, e);
       }
+
+      if (mTimelineLog != null) {
+        if(mInstance != null) {
+          WXSDKInstance wxsdkInstance = mInstance.get();
+          if(wxsdkInstance != null) {
+            wxsdkInstance.mTimeCalculator.addLog(mTimelineLog);
+          }
+        }
+      }
+
     }
   }
 
@@ -90,10 +125,15 @@ public class WXThread extends HandlerThread {
    * @return
    */
   public static Runnable secure(Runnable runnable){
+    return secure(runnable, null, null);
+  }
+
+
+  public static Runnable secure(Runnable runnable, WXSDKInstance instance, String runnableName){
     if(runnable == null || runnable instanceof SafeRunnable){
       return runnable;
     }
-    return new SafeRunnable(runnable);
+    return new SafeRunnable(runnable,instance, runnableName);
   }
 
   public static Callback secure(Callback callback){

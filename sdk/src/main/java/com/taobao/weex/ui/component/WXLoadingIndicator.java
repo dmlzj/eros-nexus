@@ -25,7 +25,7 @@ import android.support.annotation.NonNull;
 import com.taobao.weex.WXSDKInstance;
 import com.taobao.weex.annotation.Component;
 import com.taobao.weex.common.Constants;
-import com.taobao.weex.dom.WXDomObject;
+import com.taobao.weex.ui.action.BasicComponentData;
 import com.taobao.weex.ui.view.refresh.circlebar.CircleProgressBar;
 import com.taobao.weex.utils.WXResourceUtils;
 import com.taobao.weex.utils.WXUtils;
@@ -35,10 +35,9 @@ import com.taobao.weex.utils.WXUtils;
 public class WXLoadingIndicator extends WXComponent<CircleProgressBar> {
 
 
-    public WXLoadingIndicator(WXSDKInstance instance, WXDomObject dom, WXVContainer parent, boolean isLazy) {
-        super(instance, dom, parent, isLazy);
+    public WXLoadingIndicator(WXSDKInstance instance, WXVContainer parent, boolean isLazy, BasicComponentData basicComponentData) {
+        super(instance, parent, isLazy, basicComponentData);
     }
-
 
     @Override
     protected CircleProgressBar initComponentHostView(@NonNull Context context) {
@@ -53,6 +52,12 @@ public class WXLoadingIndicator extends WXComponent<CircleProgressBar> {
                 if (color != null)
                     setColor(color);
                 return true;
+            case Constants.Name.ANIMATING:
+                Boolean result = WXUtils.getBoolean(param, null);
+                if (result != null) {
+                    setAnimating(result);
+                }
+                return true;
         }
         return super.setProperty(key, param);
     }
@@ -62,6 +67,15 @@ public class WXLoadingIndicator extends WXComponent<CircleProgressBar> {
         if (color != null && !color.equals("")) {
             int parseColor = WXResourceUtils.getColor(color, Color.RED);
             getHostView().setColorSchemeColors(parseColor);
+        }
+    }
+
+    @WXComponentProp(name = Constants.Name.ANIMATING)
+    public void setAnimating(boolean animating) {
+        if (animating) {
+            getHostView().start();
+        } else {
+            getHostView().stop();
         }
     }
 }

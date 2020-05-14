@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- *
+ * 
  *   http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -27,7 +27,6 @@ import android.view.View;
 import android.widget.FrameLayout;
 
 import com.taobao.weex.common.Constants;
-import com.taobao.weex.dom.ImmutableDomObject;
 import com.taobao.weex.ui.component.WXComponent;
 import com.taobao.weex.ui.view.WXLoadingLayout;
 import com.taobao.weex.ui.view.WXRefreshLayout;
@@ -120,11 +119,10 @@ public abstract class BaseBounceView<T extends View> extends FrameLayout {
         if (swipeLayout != null) {
             WXRefreshView refreshView = swipeLayout.getHeaderView();
             if (refreshView != null) {
-                ImmutableDomObject immutableDomObject = refresh.getDomObject();
-                if (immutableDomObject != null) {
-                    int refreshHeight = (int) immutableDomObject.getLayoutHeight();
+                if (refresh != null) {
+                    int refreshHeight = (int) refresh.getLayoutHeight();
                     swipeLayout.setRefreshHeight(refreshHeight);
-                    String colorStr = (String) immutableDomObject.getStyles().get(Constants.Name.BACKGROUND_COLOR);
+                    String colorStr = (String) refresh.getStyles().get(Constants.Name.BACKGROUND_COLOR);
                     String bgColor = WXUtils.getString(colorStr, null);
                     if (bgColor != null) {
                         if (!TextUtils.isEmpty(bgColor)) {
@@ -149,11 +147,10 @@ public abstract class BaseBounceView<T extends View> extends FrameLayout {
         if (swipeLayout != null) {
             WXRefreshView refreshView = swipeLayout.getFooterView();
             if (refreshView != null) {
-                ImmutableDomObject immutableDomObject = loading.getDomObject();
-                if (immutableDomObject != null) {
-                    int loadingHeight = (int) immutableDomObject.getLayoutHeight();
+                if (loading != null) {
+                    int loadingHeight = (int) loading.getLayoutHeight();
                     swipeLayout.setLoadingHeight(loadingHeight);
-                    String colorStr = (String) immutableDomObject.getStyles().get(Constants.Name.BACKGROUND_COLOR);
+                    String colorStr = (String) loading.getStyles().get(Constants.Name.BACKGROUND_COLOR);
                     String bgColor = WXUtils.getString(colorStr, null);
                     if (bgColor != null) {
                         if (!TextUtils.isEmpty(bgColor)) {
@@ -228,9 +225,6 @@ public abstract class BaseBounceView<T extends View> extends FrameLayout {
 
     public abstract void onLoadmoreComplete();
 
-    //benmu.org
-
-
     // iCoastline 下拉加载更多
     public void setCustomHeaderView(View view){
         setRefreshEnable(true);
@@ -245,5 +239,4 @@ public abstract class BaseBounceView<T extends View> extends FrameLayout {
         swipeLayout.setLoadingHeight(WXViewUtils.dip2px(40));
         swipeLayout.getFooterView().setRefreshView(view);
     }
-
 }

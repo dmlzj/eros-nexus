@@ -20,7 +20,9 @@ package com.taobao.weex.ui.component.helper;
 
 import android.os.Handler;
 import android.os.Looper;
+
 import com.taobao.weex.common.Constants;
+import com.taobao.weex.common.OnWXScrollListener;
 import com.taobao.weex.ui.component.WXComponent;
 import com.taobao.weex.ui.component.WXScroller;
 import com.taobao.weex.ui.component.list.BasicListComponent;
@@ -35,20 +37,25 @@ import java.util.Map;
  * Created by furture on 2017/11/13.
  */
 
-public class ScrollStartEndHelper  implements Runnable{
+public class ScrollStartEndHelper implements Runnable{
 
     private Handler handler;
     private WXComponent component;
     private boolean  hasStart;
+    private boolean  canStart = false;
+
     private long  minInterval;
+    private int oldState = OnWXScrollListener.IDLE;
 
     private int x;
     private int y;
+    private boolean hasScrollEnd;
+
 
     public ScrollStartEndHelper(WXComponent component) {
         this.component = component;
         this.handler = new Handler(Looper.getMainLooper());
-        this.minInterval = WXUtils.getNumberInt(component.getDomObject().getAttrs().get("minscrolldelayinterval"), 32);
+        this.minInterval = WXUtils.getNumberInt(component.getAttrs().get("minscrolldelayinterval"), 32);
     }
 
     /**
@@ -56,15 +63,20 @@ public class ScrollStartEndHelper  implements Runnable{
      * @param  y scroll offset or dy, which is not accurate
      * */
     public void  onScrolled(int x, int y){
-        if((component.getDomObject().getEvents().contains(Constants.Event.SCROLL_START)
-                || component.getDomObject().getEvents().contains(Constants.Event.SCROLL_END))){
+        if((component.getEvents().contains(Constants.Event.SCROLL_START)
+                || component.getEvents().contains(Constants.Event.SCROLL_END))){
             this.x = x;
             this.y = y;
-            if(!hasStart){
-                if(component.getDomObject().getEvents().contains(Constants.Event.SCROLL_START)){
-                    component.fireEvent(Constants.Event.SCROLL_START, getScrollEvent(x, y));
+            if(!hasStart && canStart){
+                if(component.getEvents().contains(Constants.Event.SCROLL_START)){
+                    Map<String, Object> event = getScrollEvent(x,y);
+                    if (null !=event && !event.isEmpty()){
+                        component.fireEvent(Constants.Event.SCROLL_START,event);
+
+                    }
                 }
                 hasStart = true;
+                canStart = false;
             }
             handler.removeCallbacks(this);
             handler.postDelayed(this, minInterval);
@@ -77,16 +89,26 @@ public class ScrollStartEndHelper  implements Runnable{
         if(component.isDestoryed()){
             return;
         }
-        if(component.getDomObject().getEvents().contains(Constants.Event.SCROLL_END)){
+        if(!hasScrollEnd){
+            return;
+        }
+        if(canStart){
+            component.fireEvent(Constants.Event.SCROLL_START, getScrollEvent(this.x, this.y));
+            canStart = false;
+        }
+        if(component.getEvents().contains(Constants.Event.SCROLL_END)){
             component.fireEvent(Constants.Event.SCROLL_END, getScrollEvent(this.x, this.y));
+
         }
         hasStart = false;
+        hasScrollEnd = false;
+
     }
 
     private Map<String, Object> getScrollEvent(int offsetX, int offsetY){
         if(component instanceof BasicListComponent){
             BasicListComponent basicListComponent = (BasicListComponent) component;
-            if(basicListComponent.getHostView() instanceof  ListComponentView){
+            if(basicListComponent.getHostView() instanceof ListComponentView){
                 ListComponentView componentView = (ListComponentView) basicListComponent.getHostView();
                 if(componentView != null){
                     return basicListComponent.getScrollEvent(componentView.getInnerView(), offsetX, offsetY);
@@ -100,6 +122,21 @@ public class ScrollStartEndHelper  implements Runnable{
             return scroller.getScrollEvent(offsetX, offsetY);
         }
         return null;
+    }
+
+    public void onScrollStateChanged(int newState){
+
+        if(oldState == OnWXScrollListener.IDLE){
+            canStart = true;
+        }
+
+        if(newState == OnWXScrollListener.IDLE){
+            hasScrollEnd = true;
+            handler.removeCallbacks(this);
+            handler.postDelayed(this, minInterval);
+        }
+
+        oldState = newState;
     }
 
 

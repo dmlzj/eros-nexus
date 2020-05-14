@@ -24,7 +24,7 @@ import com.taobao.weex.bridge.JavascriptInvokable;
 /**
  * Created by sospartan on 6/23/16.
  */
-public interface IFComponentHolder extends ComponentCreator,JavascriptInvokable {
+public interface IFComponentHolder extends ComponentCreator, JavascriptInvokable {
 
     /** Prepare component if not a lazy load componnet.**/
     void loadIfNonLazy();

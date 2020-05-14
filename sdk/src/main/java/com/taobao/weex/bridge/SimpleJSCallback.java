@@ -18,12 +18,29 @@
  */
 package com.taobao.weex.bridge;
 
+import java.io.Serializable;
+
 /**
  * Created by sospartan on 27/10/2016.
  */
-public class SimpleJSCallback implements JSCallback {
+public class SimpleJSCallback implements JSCallback , Serializable {
+
   String mInstanceId;
   String mCallbackId;
+
+  private InvokerCallback mInvokerCallback;
+
+  public void setInvokerCallback(InvokerCallback callback) {
+    this.mInvokerCallback = callback;
+  }
+
+  interface InvokerCallback {
+    void onInvokeSuccess();
+  }
+
+  public String getCallbackId() {
+    return mCallbackId;
+  }
 
   public SimpleJSCallback(String instanceId, String callbackId) {
     this.mCallbackId = callbackId;
@@ -34,6 +51,9 @@ public class SimpleJSCallback implements JSCallback {
   @Override
   public void invoke(Object data) {
     WXBridgeManager.getInstance().callbackJavascript(mInstanceId, mCallbackId, data, false);
+    if (mInvokerCallback != null) {
+      mInvokerCallback.onInvokeSuccess();
+    }
   }
 
   @Override

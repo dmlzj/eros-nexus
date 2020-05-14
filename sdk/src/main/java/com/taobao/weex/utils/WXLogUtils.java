@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -23,12 +23,15 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import com.taobao.weex.WXEnvironment;
+import com.taobao.weex.performance.WXStateRecord;
 
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 public class WXLogUtils {
 
@@ -39,11 +42,12 @@ public class WXLogUtils {
 
   private static StringBuilder builder = new StringBuilder(50);
   private static HashMap<String, Class> clazzMaps = new HashMap<>(2);
-  private static JsLogWatcher jsLogWatcher;
+  private static List<JsLogWatcher> jsLogWatcherList;
   private static LogWatcher sLogWatcher;
 
   static {
     clazzMaps.put(CLAZZ_NAME_LOG_UTIL, loadClass(CLAZZ_NAME_LOG_UTIL));
+    jsLogWatcherList = new ArrayList<>();
   }
 
   private static Class loadClass(String clazzName) {
@@ -61,57 +65,92 @@ public class WXLogUtils {
 
   public static void renderPerformanceLog(String type, long time) {
     if (WXEnvironment.isApkDebugable() || WXEnvironment.isPerf()) {
-      builder.setLength(0);
-      builder.append("[render time]").append(type).append(":").append(time);
-      Log.d(WEEX_PERF_TAG, builder.substring(0));
-      writeConsoleLog("debug", builder.substring(0));
+//      builder.setLength(0);
+//      builder.append("[render time]").append(type).append(":").append(time);
+//      Log.d(WEEX_PERF_TAG, builder.substring(0));
+//      writeConsoleLog("debug", builder.substring(0));
     }
   }
 
   private static void log(String tag, String msg, LogLevel level){
-	if(msg != null && tag != null && sLogWatcher !=null){
-	  sLogWatcher.onLog(level.getName(), tag, msg);
-	}
+    if(TextUtils.isEmpty(msg) || TextUtils.isEmpty(tag) || level == null || TextUtils.isEmpty(level.getName())){
+      return;
+    }
+    if (level == LogLevel.ERROR && !TextUtils.isEmpty(msg) && msg.contains("IPCException")){
+      WXStateRecord.getInstance().recordIPCException("ipc",msg);
+    }
 
-	if (WXEnvironment.isApkDebugable()) {
-        Log.println(level.getPriority(),tag, msg);
+    if(sLogWatcher !=null){
+      sLogWatcher.onLog(level.getName(), tag, msg);
+    }
+
+    if (WXEnvironment.isApkDebugable()) {
+      if(level.getValue() - WXEnvironment.sLogLevel.getValue() >= 0) {
+        Log.println(level.getPriority(), tag, msg);
+        writeConsoleLog(level.getName(), msg);
+      }
       // if not debug level then print log
-      if(!level.getName().equals("debug")){
-		writeConsoleLog(level.getName(), msg);
-	  }
     }else {
-	  if(level.getPriority() - LogLevel.WARN.getPriority() >=0){
-		Log.println(level.getPriority(),tag, msg);
-	  }
-	}
-  }
-
-  public static void d(String msg) {
-    d(WEEX_TAG,msg);
-  }
-
-  public static void i(String msg) {
-    i(WEEX_TAG,msg);
-  }
-
-  public static void info(String msg) {
-    i(WEEX_TAG,msg);
+      if(level.getValue() - LogLevel.WARN.getValue() >=0 && level.getValue() - WXEnvironment.sLogLevel.getValue() >= 0){
+        Log.println(level.getPriority(),tag, msg);
+      }
+    }
   }
 
   public static void v(String msg) {
     v(WEEX_TAG,msg);
   }
 
+  public static void d(String msg) {
+    d(WEEX_TAG,msg);
+  }
+
+  public static void d(String tag, byte[] msg) {
+    d(tag, new String(msg));
+  }
+
+  public static void i(String msg) {
+    i(WEEX_TAG,msg);
+  }
+
+  public static void i(String tag, byte[] msg) {
+    i(tag, new String(msg));
+  }
+
+  public static void info(String msg) {
+    i(WEEX_TAG, msg);
+  }
+
   public static void w(String msg) {
-    w(WEEX_TAG,msg);
+    w(WEEX_TAG, msg);
+  }
+
+  public static void w(String tag, byte[] msg) {
+    w(tag, new String(msg));
   }
 
   public static void e(String msg) {
     e(WEEX_TAG,msg);
   }
 
-  public static void d(String tag, byte[] msg) {
-    d(tag,new String(msg));
+  public static void e(String tag, byte[] msg) {
+    e(tag, new String(msg));
+  }
+
+  public static void performance(String instanceId, byte[]msg) {
+//    String s = new String(msg);
+//    if(!TextUtils.isEmpty(instanceId)) {
+//      WXSDKInstance sdkInstance = WXSDKManager.getInstance().getSDKInstance(instanceId);
+//      if(sdkInstance != null) {
+//        int i = s.indexOf(",");
+//        if(i >=0 && i < s.length()) {
+//          String substring = s.substring(s.indexOf(",") + 1);
+//          LogDetail logDetail = JSON.parseObject(substring,LogDetail.class);
+//          sdkInstance.mTimeCalculator.addLog(logDetail);
+//        }
+//      }
+//    }
+//    Log.e(TIMELINE_TAG, "from WeexCore" + s);
   }
 
   public static void wtf(String msg){
@@ -120,36 +159,27 @@ public class WXLogUtils {
 
   public static void d(String tag, String msg) {
 
-	if(!TextUtils.isEmpty(tag) && !TextUtils.isEmpty(msg)){
-	  log(tag, msg, LogLevel.DEBUG);
+    if(!TextUtils.isEmpty(tag) && !TextUtils.isEmpty(msg)){
+      log(tag, msg, LogLevel.DEBUG);
 
-	  if(WXEnvironment.isApkDebugable()){//sLogLevel in debug mode is "LogLevel.DEBUG"
-		if ("jsLog".equals(tag) && jsLogWatcher != null) {
-		  if (msg.endsWith("__DEBUG")) {
-			jsLogWatcher.onJsLog(Log.DEBUG, msg.replace("__DEBUG", ""));
-		  } else if (msg.endsWith("__INFO")) {
-			jsLogWatcher.onJsLog(Log.DEBUG, msg.replace("__INFO", ""));
-		  } else if (msg.endsWith("__WARN")) {
-			jsLogWatcher.onJsLog(Log.DEBUG, msg.replace("__WARN", ""));
-		  } else if (msg.endsWith("__ERROR")) {
-			jsLogWatcher.onJsLog(Log.DEBUG, msg.replace("__ERROR", ""));
-		  } else {
-			jsLogWatcher.onJsLog(Log.DEBUG, msg);
-		  }
-		}
-
-		/** This log method will be invoked from jni code, so try to extract loglevel from message. **/
-		writeConsoleLog("debug", tag + ":" + msg);
-		if(msg.contains(" | __")){
-		  String[] msgs=msg.split(" | __");
-		  LogLevel level;
-		  if( msgs!=null && msgs.length==4 && !TextUtils.isEmpty(msgs[0]) && !TextUtils.isEmpty(msgs[2])){
-			level=getLogLevel(msgs[2]);
-			return;
-		  }
-		}
-	  }
-	}
+      if(WXEnvironment.isApkDebugable()){//sLogLevel in debug mode is "LogLevel.DEBUG"
+        if ("jsLog".equals(tag) && jsLogWatcherList != null && jsLogWatcherList.size() > 0) {
+          for (JsLogWatcher jsLogWatcher : jsLogWatcherList) {
+            if (msg.endsWith("__DEBUG")) {
+              jsLogWatcher.onJsLog(Log.DEBUG, msg.replace("__DEBUG", ""));
+            } else if (msg.endsWith("__INFO")) {
+              jsLogWatcher.onJsLog(Log.DEBUG, msg.replace("__INFO", ""));
+            } else if (msg.endsWith("__WARN")) {
+              jsLogWatcher.onJsLog(Log.DEBUG, msg.replace("__WARN", ""));
+            } else if (msg.endsWith("__ERROR")) {
+              jsLogWatcher.onJsLog(Log.DEBUG, msg.replace("__ERROR", ""));
+            } else {
+              jsLogWatcher.onJsLog(Log.DEBUG, msg);
+            }
+          }
+        }
+      }
+    }
   }
 
   private static LogLevel getLogLevel(String level) {
@@ -215,12 +245,12 @@ public class WXLogUtils {
   }
 
   public static void w(String prefix, Throwable e) {
-      w(prefix + getStackTrace(e));
+    w(prefix + getStackTrace(e));
 
   }
 
   public static void e(String prefix, Throwable e) {
-      e(prefix + getStackTrace(e));
+    e(prefix + getStackTrace(e));
 
   }
 
@@ -289,7 +319,9 @@ public class WXLogUtils {
   }
 
   public static void setJsLogWatcher(JsLogWatcher watcher) {
-    jsLogWatcher = watcher;
+    if (!jsLogWatcherList.contains(watcher)) {
+      jsLogWatcherList.add(watcher);
+    }
   }
 
   public static void setLogWatcher(LogWatcher watcher) {

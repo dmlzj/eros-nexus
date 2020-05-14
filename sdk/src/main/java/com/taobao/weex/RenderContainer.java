@@ -22,46 +22,75 @@ import android.annotation.TargetApi;
 import android.content.Context;
 import android.os.Build;
 import android.util.AttributeSet;
-import android.widget.FrameLayout;
+import android.view.View;
 
 
-import java.lang.ref.WeakReference;
+import com.taobao.weex.render.WXAbstractRenderContainer;
 
 /**
  * Created by sospartan on 08/10/2016.
  */
 
-public class RenderContainer extends FrameLayout {
-  private WeakReference<WXSDKInstance> mSDKInstance;
+public class RenderContainer extends WXAbstractRenderContainer implements WeexFrameRateControl.VSyncListener{
+  private WeexFrameRateControl mFrameRateControl;
 
   public RenderContainer(Context context) {
     super(context);
+    mFrameRateControl = new WeexFrameRateControl(this);
   }
 
   public RenderContainer(Context context, AttributeSet attrs) {
     super(context, attrs);
+    mFrameRateControl = new WeexFrameRateControl(this);
   }
 
   public RenderContainer(Context context, AttributeSet attrs, int defStyleAttr) {
     super(context, attrs, defStyleAttr);
+    mFrameRateControl = new WeexFrameRateControl(this);
   }
 
   @TargetApi(Build.VERSION_CODES.LOLLIPOP)
   public RenderContainer(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
     super(context, attrs, defStyleAttr, defStyleRes);
+    mFrameRateControl = new WeexFrameRateControl(this);
   }
 
-  public void setSDKInstance(WXSDKInstance instance) {
-    mSDKInstance = new WeakReference<>(instance);
+
+
+  @Override
+  public void onAttachedToWindow() {
+    super.onAttachedToWindow();
+    if (mFrameRateControl != null) {
+      mFrameRateControl.start();
+    }
   }
 
   @Override
-  protected void onSizeChanged(int w, int h, int oldw, int oldh) {
-    super.onSizeChanged(w, h, oldw, oldh);
-    WXSDKInstance instance;
-    if (mSDKInstance != null && (instance = mSDKInstance.get()) != null) {
-      //re-render instance
-      instance.setSize(w, h);
+  protected void onDetachedFromWindow() {
+    super.onDetachedFromWindow();
+    if (mFrameRateControl != null) {
+      mFrameRateControl.stop();
     }
   }
+  @Override
+  public void dispatchWindowVisibilityChanged(int visibility) {
+    super.dispatchWindowVisibilityChanged(visibility);
+    if (visibility == View.GONE) {
+      if (mFrameRateControl != null) {
+        mFrameRateControl.stop();
+      }
+    } else if (visibility == View.VISIBLE) {
+      if (mFrameRateControl != null) {
+        mFrameRateControl.start();
+      }
+    }
+  }
+
+  @Override
+  public void OnVSync() {
+    if (mSDKInstance != null && mSDKInstance.get() != null) {
+      mSDKInstance.get().OnVSync();
+    }
+  }
+
 }

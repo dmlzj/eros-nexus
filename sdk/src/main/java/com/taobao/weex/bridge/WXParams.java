@@ -18,9 +18,17 @@
  */
 package com.taobao.weex.bridge;
 
+import com.taobao.weex.WXEnvironment;
+import com.taobao.weex.WXSDKManager;
+import com.taobao.weex.adapter.IWXConfigAdapter;
+import com.taobao.weex.base.CalledByNative;
+import com.taobao.weex.utils.WXLogUtils;
+
+import java.io.Serializable;
+import java.util.HashMap;
 import java.util.Map;
 
-public class WXParams {
+public class WXParams implements Serializable {
 
   private String platform;
   private String osVersion;
@@ -34,9 +42,19 @@ public class WXParams {
   private String logLevel;
   private String needInitV8;
   private String cacheDir;
+  private String useSingleProcess;
+  private String crashFilePath;
+  private String libJssPath;
+  private String layoutDirection;
+
+  private String libJscPath;
+  private String libIcuPath;
+  private String libLdPath;
+  private String libJsbPath;
 
   private Map<String, String> options;
 
+  @CalledByNative
   public Object getOptions() {
     return options;
   }
@@ -53,6 +71,7 @@ public class WXParams {
     this.shouldInfoCollect = shouldInfoCollect;
   }
 
+  @CalledByNative
   public String getPlatform() {
     return platform;
   }
@@ -65,10 +84,12 @@ public class WXParams {
     this.cacheDir = cache;
   }
 
+  @CalledByNative
   public String getCacheDir() {
     return this.cacheDir;
   }
 
+  @CalledByNative
   public String getOsVersion() {
     return osVersion;
   }
@@ -77,6 +98,7 @@ public class WXParams {
     this.osVersion = osVersion;
   }
 
+  @CalledByNative
   public String getAppVersion() {
     return appVersion;
   }
@@ -85,6 +107,7 @@ public class WXParams {
     this.appVersion = appVersion;
   }
 
+  @CalledByNative
   public String getWeexVersion() {
     return weexVersion;
   }
@@ -93,6 +116,7 @@ public class WXParams {
     this.weexVersion = weexVersion;
   }
 
+  @CalledByNative
   public String getDeviceModel() {
     return deviceModel;
   }
@@ -101,6 +125,12 @@ public class WXParams {
     this.deviceModel = deviceModel;
   }
 
+  @CalledByNative
+  public String getLayoutDirection() {return layoutDirection;}
+
+  public void setLayoutDirection(String direction) { this.layoutDirection = direction; }
+
+  @CalledByNative
   public String getAppName() {
     return appName;
   }
@@ -109,8 +139,20 @@ public class WXParams {
     this.appName = appName;
   }
 
+  @CalledByNative
   public String getDeviceWidth() {
     return deviceWidth;
+  }
+
+  @CalledByNative
+  public boolean getReleaseMap() {
+    IWXConfigAdapter adapter = WXSDKManager.getInstance().getWxConfigAdapter();
+    if (null == adapter){
+      return false;
+    }
+    String doRelease = adapter.getConfigWhenInit("wxapm","release_map","true");
+    WXLogUtils.e("getReleaseMap:"+doRelease);
+    return "true".equalsIgnoreCase(doRelease);
   }
 
 
@@ -124,6 +166,7 @@ public class WXParams {
     this.deviceWidth = deviceWidth;
   }
 
+  @CalledByNative
   public String getDeviceHeight() {
     return deviceHeight;
   }
@@ -137,6 +180,16 @@ public class WXParams {
       return "";
     }
     return logLevel;
+  }
+
+  @CalledByNative
+  public String getUseSingleProcess() {
+    WXLogUtils.e("getUseSingleProcess is running " + useSingleProcess);
+    return useSingleProcess;
+  }
+
+  public void setUseSingleProcess(String useSingleProcess) {
+    this.useSingleProcess = useSingleProcess;
   }
 
   public void setLogLevel(String logLevel) {
@@ -156,5 +209,95 @@ public class WXParams {
     } else {
       this.needInitV8 = "0";
     }
+  }
+
+  public void setCrashFilePath(String crashFilePath) {
+    WXLogUtils.e("WXParams","setCrashFilePath: " + crashFilePath);
+    this.crashFilePath = crashFilePath;
+  }
+
+  @CalledByNative
+  public String getCrashFilePath() {
+    WXLogUtils.e("WXParams", "getCrashFilePath:" + crashFilePath);
+    return this.crashFilePath;
+  }
+
+  @CalledByNative
+  public String getLibJssPath() {
+    WXLogUtils.e("getLibJssPath is running " + libJssPath);
+    return libJssPath;
+  }
+
+  @CalledByNative
+  public String getLibJsbPath() {
+    WXLogUtils.e("getLibJsbPath is running " + libJsbPath);
+    return libJsbPath;
+  }
+
+  public void setLibJsbPath(String libJsbPath) {
+    this.libJsbPath = libJsbPath;
+  }
+
+  @CalledByNative
+  public String getLibJscPath() {
+    WXLogUtils.e("getLibJscPath is running " + libJscPath);
+    return libJscPath;
+  }
+  public void setLibJscPath(String libJscPath) {
+    this.libJscPath = libJscPath;
+  }
+  public void setLibJssPath(String libJssPath) {
+    this.libJssPath = libJssPath;
+  }
+  @CalledByNative
+  public String getLibIcuPath() {
+    WXLogUtils.e("getLibIcuPath is running " + libIcuPath);
+    return libIcuPath;
+  }
+
+  public void setLibIcuPath(String libIcuPath) {
+    this.libIcuPath = libIcuPath;
+  }
+
+  @CalledByNative
+  public String getLibLdPath() {
+    WXLogUtils.e("getLibLdPath is running " + libLdPath);
+    return libLdPath;
+  }
+
+  public void setLibLdPath(String libLdPath) {
+    this.libLdPath = libLdPath;
+  }
+
+  @CalledByNative
+  public String getUseRunTimeApi() {
+    return String.valueOf(WXEnvironment.sUseRunTimeApi);
+  }
+
+  public Map<String, Object> toMap() {
+    HashMap<String, Object> map  = new HashMap<>();
+    map.put("appName", appName);
+    map.put("appVersion", appVersion);
+    map.put("cacheDir", cacheDir);
+    map.put("deviceHeight", deviceHeight);
+    map.put("deviceModel", deviceModel);
+    map.put("deviceWidth", deviceWidth);
+    map.put("layoutDirection", layoutDirection);
+    map.put("libJssPath", libJssPath);
+    map.put("logLevel", logLevel);
+    map.put("needInitV8", needInitV8);
+    map.put("osVersion", osVersion);
+    map.put("platform", platform);
+    map.put("useSingleProcess", useSingleProcess);
+    map.put("shouldInfoCollect", shouldInfoCollect);
+    map.put("weexVersion", weexVersion);
+    map.put("crashFilePath", crashFilePath);
+    map.put("libJscPath", libJscPath);
+    map.put("libIcuPath", libIcuPath);
+    map.put("libLdPath", libLdPath);
+    map.put("options", options);
+    map.put("useRunTimeApi",WXEnvironment.sUseRunTimeApi);
+    map.put("__enable_native_promise__",!WXEnvironment.sUseRunTimeApi);
+    return map;
   }
 }

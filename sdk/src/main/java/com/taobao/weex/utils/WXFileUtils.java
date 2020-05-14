@@ -22,7 +22,9 @@ import android.content.Context;
 import android.text.TextUtils;
 import android.util.Base64;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -34,6 +36,13 @@ import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Locale;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
+import java.util.zip.ZipInputStream;
+import com.taobao.weex.WXEnvironment;
+
+import static com.taobao.weex.utils.WXSoInstallMgrSdk._cpuType;
 
 public class WXFileUtils {
 
@@ -80,7 +89,7 @@ public class WXFileUtils {
     return "";
   }
 
-  private static String readStreamToString(InputStream inputStream) {
+  public static String readStreamToString(InputStream inputStream) {
     BufferedReader bufferedReader = null;
     try {
       StringBuilder builder = new StringBuilder(inputStream.available() + 10);
@@ -111,6 +120,24 @@ public class WXFileUtils {
     }
 
     return "";
+  }
+
+  public static byte[] readBytesFromAssets(String path, Context context) {
+    if (context == null || TextUtils.isEmpty(path)) {
+      return null;
+    }
+    InputStream inputStream = null;
+    try {
+      inputStream = context.getAssets().open(path);
+      byte[] data = new byte[4096];
+      int length = inputStream.read(data);
+      byte[] result = new byte[length];
+      System.arraycopy(data, 0, result, 0, length);
+      return result;
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+    return null;
   }
 
   public static boolean saveFile(String path, byte[] content, Context context) {
@@ -178,4 +205,100 @@ public class WXFileUtils {
       return  "";
     }
   }
+
+  public static void extractSo(String apkFile, String path) throws IOException {
+    ZipFile zip = new ZipFile(apkFile);
+    InputStream zipInputStream = new BufferedInputStream(new FileInputStream(apkFile));
+    ZipInputStream zin = new ZipInputStream(zipInputStream);
+    ZipEntry zipEntry;
+    while ((zipEntry = zin.getNextEntry()) != null) {
+      if(zipEntry.isDirectory()){
+        continue;
+      }
+      if(zipEntry.getName().contains("lib/" + _cpuType() + "/") &&
+              (zipEntry.getName().contains("weex") || zipEntry.getName().equals(
+                  String.format(Locale.ENGLISH, "lib%s.so", WXEnvironment.CORE_JSC_SO_NAME)))){
+        String[] fileNames = zipEntry.getName().split("/");
+        String fileName = fileNames[fileNames.length - 1];
+        InputStream inputStream = zip.getInputStream(zipEntry);
+        byte[] data = new byte[1024];
+        File zipFile = new File(path + "/" + fileName);
+        if(zipFile.exists()) {
+          zipFile.delete();
+        }
+
+        zipFile.createNewFile();
+
+        FileOutputStream outputStream =new FileOutputStream(zipFile);
+        while (inputStream.read(data) != -1) {
+          outputStream.write(data);
+        }
+        outputStream.close();
+
+      }
+    }
+    zin.closeEntry();
+  }
+
+  public static void copyFile(File oldFile, File newFile) {
+    FileInputStream inputStream = null;
+    FileOutputStream outputStream = null;
+    try {
+      inputStream = new FileInputStream(oldFile);
+      byte[] data = new byte[1024];
+      outputStream = new FileOutputStream(newFile);
+      while (inputStream.read(data) != -1) {
+        outputStream.write(data);
+      }
+      inputStream.close();
+      outputStream.close();
+    } catch (Exception e) {
+      WXLogUtils.e("copyFile " + e.getMessage() + ": " + oldFile.getAbsolutePath() + ": " + newFile.getAbsolutePath());
+      if (inputStream != null) {
+        try {
+          inputStream.close();
+        } catch (IOException e1) {
+          e1.printStackTrace();
+        }
+      }
+
+      if (outputStream != null) {
+        try {
+          outputStream.close();
+        } catch (IOException e1) {
+          e1.printStackTrace();
+        }
+      }
+    }
+  }
+
+  public static void copyFileWithException(File oldFile,File newFile ) throws Exception{
+    FileInputStream inputStream = null;
+    FileOutputStream outputStream = null;
+    try {
+      inputStream = new FileInputStream(oldFile);
+      byte[] data = new byte[1024];
+      outputStream = new FileOutputStream(newFile);
+      while (inputStream.read(data) != -1) {
+        outputStream.write(data);
+      }
+    }catch (Exception e){
+      throw e;
+    }finally {
+      closeIo(inputStream);
+      closeIo(outputStream);
+    }
+  }
+
+  public static void closeIo(Closeable c){
+    if (null == c){
+      return;
+    }
+    try {
+      c.close();
+    }catch (Throwable e){
+      e.printStackTrace();
+    }
+  }
+
 }

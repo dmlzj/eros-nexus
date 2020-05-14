@@ -9,6 +9,11 @@ package com.eros.framework.constant;
 public class Constant {
 
     /**
+     * 初始化
+     */
+    public static final String AppInit = "AppInit";
+
+    /**
      * router参数
      */
     public static final String ROUTERPARAMS = "ROUTERPARAMS";
@@ -18,6 +23,11 @@ public class Constant {
      * 首页url
      */
     public static final String HOME_URL = "HOME_URL";
+
+    /**
+     * 外部浏览器调起app scheme, 要和AndroidManifest.xml中的前缀一样：例如oneone2846，那么下面就写oneone即可
+     */
+    public static final String SCHEME = "oneone";
 
     /**
      * 分享内容key

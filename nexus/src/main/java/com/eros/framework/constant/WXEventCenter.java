@@ -88,4 +88,6 @@ public class WXEventCenter {
     // 七鱼客服
     public static final String EVENT_QIYU_COUNT = "EVENT_QIYU_COUNT";
     public static final String EVENT_QIYU_MESSAGE = "EVENT_QIYU_MESSAGE";
+
+    public static final String EVENT_STARTAPP = "EVENT_STARTAPP";
 }

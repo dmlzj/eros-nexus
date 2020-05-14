@@ -18,13 +18,10 @@
  */
 package com.taobao.weex.bridge;
 
-import java.io.Serializable;
-import java.util.Map;
-
 /**
  * Created by sospartan on 5/24/16.
  */
-public interface JSCallback extends Serializable{
+public interface JSCallback {
   /**
    * invoke javascript callback method, this method will destoryed after invoke.
    * @param data

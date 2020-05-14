@@ -19,12 +19,13 @@
 package com.taobao.weex.appfram.storage;
 
 import java.util.Map;
+import com.taobao.weex.InitConfig;
 
 /**
  * interface for {@link WXStorageModule} class.
  * this interface works as an adapter for different storage strategy.
  * the default is use {@link android.database.sqlite.SQLiteDatabase} to store k-v pairs.
- * You can call {@link com.taobao.weex.InitConfig.Builder#setStorageAdapter(IWXStorageAdapter)} to inject your own
+ * You can call {@link InitConfig.Builder#setStorageAdapter(IWXStorageAdapter)} to inject your own
  * storage implementation.
  * */
 public interface IWXStorageAdapter {

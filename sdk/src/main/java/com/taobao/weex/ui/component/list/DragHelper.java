@@ -28,10 +28,6 @@ import com.taobao.weex.ui.component.WXComponent;
  *
  * interface for drag&drop support
  *
- * <p>
- * Created by rowandjj(chuyi)<br/>
- * Date: 16/4/5<br/>
- * Time: 上午11:34<br/>
  */
 interface DragHelper {
 

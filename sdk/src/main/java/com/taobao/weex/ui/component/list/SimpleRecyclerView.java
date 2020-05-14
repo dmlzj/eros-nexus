@@ -19,15 +19,9 @@
 package com.taobao.weex.ui.component.list;
 
 import android.content.Context;
-import android.view.View;
-import android.view.ViewGroup;
 
-import com.taobao.weex.common.WXThread;
-import com.taobao.weex.ui.component.WXComponent;
 import com.taobao.weex.ui.view.listview.WXRecyclerView;
 import com.taobao.weex.ui.view.listview.adapter.RecyclerViewBaseAdapter;
-
-import java.util.Stack;
 
 /**
  * Simple list is used for specific occasion, NOT Support sticky,load more,bounce etc.

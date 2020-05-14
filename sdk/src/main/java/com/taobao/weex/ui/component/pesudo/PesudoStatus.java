@@ -24,6 +24,7 @@ import android.support.v4.util.ArrayMap;
 import com.taobao.weex.common.Constants;
 
 import java.util.Map;
+import com.taobao.weex.common.Constants.PSEUDO;
 
 /**
  * Created by sospartan on 05/01/2017.
@@ -32,7 +33,7 @@ import java.util.Map;
 public class PesudoStatus {
 
   /**
-   * See {@link Constants.PSEUDO}
+   * See {@link PSEUDO}
    */
   private int[] mStatuses = new int[4];
 
@@ -52,7 +53,7 @@ public class PesudoStatus {
 
   /**
    *
-   * @param clzName See {@link Constants.PSEUDO}
+   * @param clzName See {@link PSEUDO}
    * @param status
    */
   public void setStatus(String clzName,boolean status){
