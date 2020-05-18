@@ -22,6 +22,8 @@ import android.content.Context;
 import android.support.v4.util.ArrayMap;
 import android.support.v7.widget.PagerSnapHelper;
 import android.text.TextUtils;
+import android.util.Log;
+
 import com.alibaba.fastjson.JSON;
 import com.taobao.weex.WXSDKInstance;
 import com.taobao.weex.annotation.Component;
@@ -125,6 +127,10 @@ public class WXListComponent extends BasicListComponent<BounceRecyclerView> {
       return;
     }
     setRefreshOrLoading(child);
+    //benmu.org
+    addCustomRefresh();
+    addCustomLoadMore();    // iCoastline 下拉加载更多
+    //benmu.org
     // Synchronize DomObject's attr to Component and Native View
     if(getHostView() != null && hasColumnPros()) {
       updateRecyclerAttr();
@@ -343,10 +349,12 @@ public class WXListComponent extends BasicListComponent<BounceRecyclerView> {
   }
   @JSMethod
   public void resetNoMoreData() {
-
+    Log.i("sss", "ddd");
   }
   @JSMethod
-  public void noticeNoMoreData() {}
+  public void noticeNoMoreData() {
+    Log.i("sss", "dddss");
+  }
   //benmu.org
   private BMBaseRefresh mBMRefresh;
 
