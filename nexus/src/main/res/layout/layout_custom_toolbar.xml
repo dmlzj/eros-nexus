@@ -7,7 +7,7 @@
               android:orientation="horizontal"
               android:paddingLeft="10dp"
               android:paddingRight="10dp"
-        >
+    android:baselineAligned="false">
 
 
     <RelativeLayout
@@ -23,11 +23,11 @@
                 android:layout_height="25dp"
                 android:layout_centerVertical="true"
                 android:clickable="true"
-                android:layout_marginRight="5dp"
+                android:layout_marginEnd="5dp"
                 android:src="@drawable/icon_backnav"
                 android:scaleType="fitCenter"
                 android:padding="5dp"
-                />
+            android:focusable="true" />
 
         <com.eros.widget.view.BMReceiverTextView
                 android:id="@+id/action_bar_tvitem_webclose"
