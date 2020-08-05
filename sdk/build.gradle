@@ -40,7 +40,7 @@ group = 'farwolf'
 
   android {
      compileSdkVersion 26
-    buildToolsVersion '27.0.3'
+    buildToolsVersion '28.0.3'
     resourcePrefix "weex"
     useLibrary 'org.apache.http.legacy'
     if(project.hasProperty('removeSharedLib') && "true".equals(project.getProperty('removeSharedLib'))) {
@@ -57,6 +57,7 @@ group = 'farwolf'
           buildConfigField "String", "JSInterpolatorName", "\"jsc\""
           multiDexEnabled true
           versionCode 1
+          minSdkVersion = 18
 
       }
     
